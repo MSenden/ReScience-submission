@@ -69,8 +69,6 @@ I			= [[.2, 0., .63, .0],[0., 0., .7, 0.],[0., .2, .63, 0.],[0., .45, .45, 0.],
 				[0.63, 0., .2, 0.],[0.45, 0., .45, 0.]]
 J   		= 0.
 
-nest.SetStatus(Ext,{'mean': J})
-
 # timing protocol (in ms)
 preStim  	=  0
 Stim     	= 50
@@ -120,6 +118,7 @@ for s in range(0,14):
 	nest.SetStatus(LLBN[1],{'mean': I[s][1]})
 	nest.SetStatus(LLBN[2],{'mean': I[s][2]})
 	nest.SetStatus(LLBN[3],{'mean': I[s][3]})
+	nest.SetStatus(OPN,{'mean': J})
 	nest.Simulate(Stim)
 
 # post-stimulus period

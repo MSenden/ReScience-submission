@@ -17,7 +17,7 @@
 #
 # Note that neuron activations are no longer bounded from below at zero. Instead input to each neuron was passed through a rectified  
 # linear signal function. Furthermore, signal function g (equation A11 in Gancarz & Grossberg; 1998) was replaced by a sigmoid 
-# function. Finally, eye position in the horizontal (vertical) direction is given by 196*TN_right (196*TN_up) rather than by 
+# function. Finally, eye position in the horizontal (vertical) direction is given by 150*TN_right (196*TN_up) rather than by 
 # 260*(TN_right-0.5) [260*(TN_up-0.5)] as described in equation A12 in Gancarz & Grossberg (1998)
 # -----------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ execfile('setup_model.py')
 ###########################################
 
 # additional variables
-g_pos		= 196.			# gain eye position
+g_pos		= 150.			# gain eye position
 
 # figure setup
 rcParams.update({'figure.autolayout': True})
@@ -68,8 +68,6 @@ ax.set_ylabel('vertical eye position (deg)')
 I_horizontal  		= [.67,.70,.74,.75,.70]
 I_vertical  		= [.08,.22,.40,.60,.90] 
 J   				= 0.
-
-nest.SetStatus(Ext,{'mean': J})
 
 # timing protocol (in ms)
 preStim  	=  0
@@ -121,6 +119,7 @@ for s in range(0,5):
 # stimulus period
 	nest.SetStatus(LLBN[1],{'mean': I_horizontal[s]})
 	nest.SetStatus(LLBN[3],{'mean': I_vertical[s]})
+	nest.SetStatus(OPN,{'mean': J})
 	nest.Simulate(Stim)
 
 # post-stimulus period

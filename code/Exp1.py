@@ -68,8 +68,6 @@ for i in range(0,fig_plots):
 I  			= 1.
 J   		= 0.
 
-nest.SetStatus(Ext,{'mean': J})
-
 # timing protocol (in ms)
 preStim  	=  50
 Stim     	= 265
@@ -120,6 +118,7 @@ nest.Simulate(preStim)
 
 # stimulus period
 nest.SetStatus(LLBN[0],{'mean': I})
+nest.SetStatus(OPN,{'mean': J})
 nest.Simulate(Stim)
 
 # post-stimulus period

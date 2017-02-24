@@ -12,12 +12,12 @@
 # 
 # Simulates reimplemented Gancarz & Grossberg (1998) model.
 # Generates Fig. 7: Oblique staircase simulation. 
-# Inputs to the horizontal and vertical circuits were held at (0.2, 0.33) for 250 ms
+# Inputs to the horizontal and vertical circuits were held at (0.2, 0.33) for 300 ms
 #
 # Note that neuron activations are no longer bounded from below at zero. Instead input to each neuron was passed through a rectified  
 # linear signal function. Furthermore, signal function g (equation A11 in Gancarz & Grossberg; 1998) was replaced by a sigmoid 
 # function. In contrast to what is reported in the original study, given the present stimulation parameters, our model produces 2
-# rather than 3 saccades. Finally, eye position in the horizontal (vertical) direction is given by 196*TN_right (196*TN_up) rather
+# rather than 3 saccades. Finally, eye position in the horizontal (vertical) direction is given by 150*TN_right (150*TN_up) rather
 # than by 260*(TN_right-0.5) [260*(TN_up-0.5)] as described in equation A12 in Gancarz & Grossberg (1998)
 # -----------------------------------------------------------------------------
 
@@ -37,8 +37,8 @@ execfile('setup_model.py')
 ###########################################
 
 # additional variables
-g_pos		= 196.			# gain eye position
-sr 			= 2500 			# sampling rate
+g_pos		= 150.			# gain eye position
+sr 			= 5000 			# sampling rate
 
 # figure setup
 rcParams.update({'figure.autolayout': True})
@@ -66,11 +66,9 @@ I_horizontal = .20
 I_vertical   = .33 
 J   		 = .0
 
-nest.SetStatus(Ext,{'mean': J})
-
 # timing protocol (in ms)
 preStim  	 =   0
-Stim     	 = 250
+Stim     	 = 300
 postStim 	 =   0
 
 # time vector T
@@ -114,6 +112,7 @@ nest.Simulate(preStim)
 # stimulus period
 nest.SetStatus(LLBN[1],{'mean': I_horizontal})
 nest.SetStatus(LLBN[3],{'mean': I_vertical})
+nest.SetStatus(OPN,{'mean': J})
 nest.Simulate(Stim)
 
 # post-stimulus period

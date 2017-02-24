@@ -104,7 +104,6 @@ for s in range(0,2):
 ###########################################
 
 	nest.Connect(MM[s], OPN, syn_spec	  = {'delay': dt})
-	nest.Connect(MM[s], Ext, syn_spec	  = {'delay': dt})
 	nest.Connect(MM[s], LLBN[0], syn_spec = {'delay': dt})
 	nest.Connect(MM[s], EBN[0], syn_spec  = {'delay': dt})
 	nest.Connect(MM[s], TN[0], syn_spec   = {'delay': dt})
@@ -124,11 +123,11 @@ for s in range(0,2):
 	nest.Simulate(Stim_1)
 
 # stimulus period 2
-	nest.SetStatus(Ext,{'mean': J[s]})
+	nest.SetStatus(OPN,{'mean': J[s]})
 	nest.Simulate(Stim_2)
 
 # stimulus period 3
-	nest.SetStatus(Ext,{'mean': 0.})
+	nest.SetStatus(OPN,{'mean': 0.})
 	nest.Simulate(Stim_3)
 
 # post-stimulus period
@@ -150,6 +149,8 @@ for s in range(0,2):
 
 		Input = np.zeros(t_end-t_start)
 		Input[preStim+1:t_end-postStim] = I
+		Ext = np.zeros(t_end-t_start)
+		Ext[preStim+1:t_end-postStim] = J[s]
 
 		ax[0].plot(range(t_start,t_end),Input,'k')
 		ax[0].set_ylabel('Input')
@@ -167,16 +168,17 @@ for s in range(0,2):
 		ax[4].set_ylim([-.01,.1])
 		ax[4].set_ylabel('TN')
 
-		ax[5].plot(T,voltages[np.where(senders == Ext)],'k')
+		ax[5].plot(range(t_start,t_end),Ext,'k')
 		ax[5].get_xaxis().set_visible(True)
-		ax[5].set_ylim([-1.,1.])
+		ax[5].set_ylim([-1.,2.])
 		pl.xlabel('time (ms)')
 		pl.ylabel('OPNSTIM')
 
 	else:
 		ax[4].plot(T,voltages[np.where(senders == TN[0])],'k--')
 
-pl.savefig(fig_name, format='eps', dpi=ppi)
 pl.show()
+pl.savefig(fig_name, format='eps', dpi=ppi)
+
 
 

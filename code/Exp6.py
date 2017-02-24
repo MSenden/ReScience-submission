@@ -17,7 +17,7 @@
 #
 # Note that neuron activations are no longer bounded from below at zero. Instead input to each neuron was passed through a rectified  
 # linear signal function. Furthermore, signal function g (equation A11 in Gancarz & Grossberg; 1998) was replaced by a sigmoid 
-# function. Finally, eye position in the horizontal (vertical) direction is given by 196*TN_right (196*TN_up) rather than by 
+# function. Finally, eye position in the horizontal (vertical) direction is given by 150*TN_right (150*TN_up) rather than by 
 # 260*(TN_right-0.5) as described in equation A12 in Gancarz & Grossberg (1998)
 # -----------------------------------------------------------------------------
 
@@ -37,7 +37,12 @@ execfile('setup_model.py')
 #### 			auxiliary				 ##
 ###########################################
 
-# declare outcome variables:
+#additional variables
+# gain eye position
+g_pos		= 150.	
+# eye velocity marking onset of saccade
+threshold	= 30.		
+# outcome variables
 Amplitude			= np.zeros(8)
 Duration			= np.zeros(8)
 Velocity			= np.zeros(8)
@@ -76,7 +81,6 @@ F			= np.linspace(1.,2.4,8)
 W 			= 2.
 J   		= 0.
 nest.Connect(gS, LLBN[1], 'all_to_all', {'model': 'rate_connection', 'weight': W})
-nest.SetStatus(Ext,{'mean': J})
 
 # timing protocol (in ms)
 preStim  	=   0
@@ -124,6 +128,7 @@ for s in range(0,8):
 
 # stimulus period
 	nest.SetStatus(SC,{'mean': F[s]})
+	nest.SetStatus(OPN,{'mean': J})
 	nest.Simulate(Stim)
 
 # post-stimulus period
@@ -146,14 +151,15 @@ for s in range(0,8):
 	voltages = data[0]['events']['rate']
 
 # compute output variables
-	a   = 196.*voltages[np.where(senders == TN[1])]  # amplitude (degree)	
+	a   = g_pos*voltages[np.where(senders == TN[1])] # amplitude (degree)	
 	v   = np.diff(a)/pow(dt,2)						 # velocity (degree/sec)
-	on  = np.where(v>30.)							 # saccade onset
-	ID  = argrelextrema(v, np.less)					 # find local minima to identify...
-	off = ID[0][(len(ID[0]))-1]						 # saccade offset
+	on  = np.where(v>threshold)						 # saccade onset
+	on  = on[0][0] 
+	off = argrelextrema(v, np.less)					 # find local minima to identify...
+	off = off[0][(len(off[0]))-1]				     # saccade offset
 	
-	Amplitude[s] = a[off]-a[on[0][0]]
-	Duration[s]  = T[off]-T[on[0][0]]	
+	Amplitude[s] = a[off]-a[on]
+	Duration[s]  = T[off]-T[on]	
 	Velocity[s]	 = np.max(v)
 
 ax[0].plot(F,Amplitude,'ko-',linewidth=2)
@@ -166,7 +172,7 @@ ax[1].set_ylim([70.,150.])
 
 ax[2].plot(F,Velocity,'ko-',linewidth=2)
 ax[2].set_ylabel('peak velocity (deg/s)')
-ax[2].set_ylim([450.,650.])
+ax[2].set_ylim([350.,550.])
 
 pl.savefig(fig_name, format='eps', dpi=ppi)
 pl.show()

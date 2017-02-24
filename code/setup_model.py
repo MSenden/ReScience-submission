@@ -11,6 +11,10 @@
 # File description:
 # 
 # Setup the Gancarz & Grossberg (1998) model in PyNEST for subsequent simulation
+
+# Note that neuron activations are no longer bounded from below at zero. Instead input to each neuron was passed through a rectified  
+# linear signal function. Furthermore, signal function g (equation A11 in Gancarz & Grossberg; 1998) was replaced by a sigmoid 
+# function.
 # -----------------------------------------------------------------------------
 
 import nest
@@ -75,16 +79,10 @@ for i in range(0, 4):
 				params = Params_tn)
 
 
-# bias units (send constant activity)
-E_plus 		= nest.Create(
+# bias unit (sends constant activity)
+Bias 		= nest.Create(
     		 'lin_rate_ipn', 									# linear gain function 
 				params={'tau': dt, 'mean': 1., 'std': sigma})	# constant input to EBN
-P_plus 		= nest.Create(
-    		 'lin_rate_ipn', 									# linear gain function 
-				params={'tau': dt, 'mean': 1.2, 'std': sigma})	# constant input to OPN
-Ext 		= nest.Create(
-    		 'lin_rate_ipn', 									# linear gain function 
-				params={'tau': dt, 'std': sigma}) 				# external stimulation of OPN
 
 # output functions (EBNs and OPN)
 gS  		= nest.Create('piecewiselin_out_function')			# piecewise linear gain function 
@@ -109,7 +107,7 @@ for i in range(0,4):
 # to EBNs
     nest.Connect(LLBN[i], EBN[i], 'all_to_all', {
                 'model': 'rate_connection', 'weight': 5.0})
-    nest.Connect(E_plus, EBN[i], 'all_to_all', {
+    nest.Connect(Bias, EBN[i], 'all_to_all', {
                 'model': 'rate_connection', 'weight': 1.0})
     nest.Connect(LLBN[k[i]], EBN[i], 'all_to_all', {
                 'model': 'rate_connection', 'weight': -10.0})
@@ -132,10 +130,8 @@ for i in range(0,4):
                 'model': 'rate_connection', 'weight': 1.0})
 
 # to OPN (cont'd)
-nest.Connect(P_plus, OPN, 'all_to_all', {
-                'model': 'rate_connection', 'weight': 1.0})
-nest.Connect(Ext, OPN, 'all_to_all', {
-                'model': 'rate_connection', 'weight': 1.0})
+nest.Connect(Bias, OPN, 'all_to_all', {
+                'model': 'rate_connection', 'weight': 1.2})
 
 # to output functions (cont'd)
 nest.Connect(OPN, gP, 'all_to_all', {

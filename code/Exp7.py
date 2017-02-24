@@ -73,8 +73,6 @@ F			= [3.,1.3]
 W 			= 2.
 J   		= 0.
 nest.Connect(gS, LLBN[0], 'all_to_all', {'model': 'rate_connection', 'weight': W})
-nest.SetStatus(Ext,{'mean': J})
-
 
 # timing protocol (in ms)
 preStim  	= 50
@@ -128,6 +126,7 @@ for s in range(0,2):
 
 # stimulus period
 	nest.SetStatus(SC,{'mean': F[s]})
+	nest.SetStatus(OPN,{'mean': J})
 	nest.Simulate(Stim[s])
 
 # post-stimulus period
