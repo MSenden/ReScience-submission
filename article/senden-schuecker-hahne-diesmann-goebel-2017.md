@@ -49,8 +49,8 @@ Publication:
 Repository:
   article:   "http://github.com/rescience/rescience-submission/article"
   code:      "http://github.com/rescience/rescience-submission/code"
-  data:      
-  notebook:  
+  data:
+  notebook:
 Reproduction:
   - "*A neural model of the saccade generator in the reticular formation*, G. Gancarz,
 	S. Grossberg, Neural Networks, 1159-1174, 1998"
@@ -61,86 +61,105 @@ Bibliography:
 
 # Introduction
 
-We provide an implementation of the saccade generator (GM) model of the neural circuitry in the reticular formation
-underlying saccadic eye movements proposed by Gancarz & Grossberg [@Gancarz1998]. The model forms part of 
-(e.g. is it an important paper in the domain ?). The original implementation is not publicly available. T
-he implementation we propose is coded in the NEST [@Gewaltig2007] framework, one of the modern actively developed simulation platforms that
-is publicly available. The code uses the Python interface [@Eppler2008] for legibility. The model
-and analysis scripts are implemented using Python 2.7.12.
+We provide an implementation of the saccade generator (SG); a rate neuron model of the neural circuitry in the reticular formation proposed by Gancarz & Grossberg [@Gancarz1998]. The same group has recently sucessfully embedded the SG into a larger model of the eye movement network [@Grossberg2012] showcasing its compatible nature. This compatibility of the SG model might prove useful in the future for studying the interplay of neural (sub)systems of visuo-motor integration. It is thus of interest to implement the model in publicly available, widely used, and actively developed neural simulation frameworks such as NEST [@Gewaltig2007]. We show that the model translates well to the NEST framework as our implementation faithfully reproduces most simulation results reported in the original publication. Our code uses the Python interface [@Eppler2008] for legibility with both model and analysis scripts being implemented using Python 2.7.12.
 
 # Methods
 
-The methods section should explain how you replicated the original results:
+We largely follow the descriptions of the model provided in the original publication with a number well-motivated exceptions. First, in the original description, neuron activations are bounded from below at zero resulting in their rectification at every step in the numerical integration. Since this effectively alters neuron dynamics from their original description, we refrained from this practice. Instead, input received by each neuron from other neurons was passed through a rectified linear gain function before summation. This assured that neuron dynamics accorded with their description. Second, the gain function 
+$$ g(x) = {\frac{x^4}{0.1^4+x^4}} $$ {#eq:1}
+(equation A11) in the original publication was replaced by
+$$ g(x) = {\frac{1}{e^{-40(x-0.1)}}} $$ {#eq:2}
+to prevent positive responses to negative net input but otherwise preserve the shape of the curve for $\mathrm{x>0}$. Third, according to equation A12 in the original publication horizontal eye position $\theta$ is given by $\mathrm{\theta=260({TN}_{r}-0.5)}$. However, activation of tonic neurons (TNs) is 0 rather than 0.5 when the eye is at the center of its range and a factor of 260 produces saccades of excessively high amplitudes. We found a factor of 150 to reproduce original simulations better. Finally, the original implementation uses the fourth order Runge–Kutta method for numerical integration. Instead, we used the Exponential Euler method which is standardly implemented in NEST for the numerical integration of rate neurons [@Hahne2016].
 
-* did you use paper description
-* did you contact authors ?
-* did you use original sources ?
-* did you modify some parts ?
-* etc.
-
-If relevevant in your domain, you should also provide a new standardized
-description of the work.
-
+In addition to these changes, the original model description has two features which cannot be straightforwardly translated to NEST. First, whether a nonlinear gain function is applied to a neuron's input can depend on the origin of said input. This is notably the case for excitatory burst neurons (EBNs) and omnipause neurons (OPNs). Since NEST only applies a single gain function per neuron to each of its input, we opted for using a linear gain function for EBNs and OPNs and to pass those inputs requiring an additional nonlinear gain function through an auxiliary unit instantaneously applying the desired nonlinearity. Second, constant input to a neuron was provided by an appropriately weighted bias node.
 
 # Results
-Results should be compared with original results and you have to explain why
-you think they are the same or why they may differ (qualitative result vs
-quantitative result). Note that it is not necessary to redo all the original
-analysis of the results.
 
-## Saccadic staircase simulation
-Bli Bla Blub
+In the remainder we present the results of our simulations for all nine experiments reported in the original publication. While our results generally accord very well with those of Gancarz & Grossberg [@Gancarz1998], some simulations required slightly divergent parameter values to reproduce original results.
+
+## 1) Saccadic staircase simulation
+
+The first simulation reported by Gancarz & Grossberg [@Gancarz1998] showcases the evolution of activity for each neuron type in the horizontal SG to a constant input ($\mathrm{I=1}$) applied to the left long-lead burst neuron (LLBN) for $265\,\mathrm{ms}$.
+
 
 ![**Figure caption for part (A) and part (B) .** 
-Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig3.eps){#fig:fig_1 height="8.5cm" width="11.6cm"}
+Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig3.eps){#fig:fig_1}
+
 
 ## Cell activity profiles in the reticular formation
-Bli Bla Blub
+
+blubber
+
 
 ![**Figure caption for part (A) and part (B) .** 
-Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig5.eps){#fig:fig_2 height="11.6cm" width="8.5cm"}
+Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig5.eps){#fig:fig_2 height="8.5cm" width="6.375cm" align="left"}
+
 
 ## Visually guided saccades
+
 Bli Bla Blub
 
+
 ![**Figure caption for part (A) and part (B) .** 
-Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig6.eps){#fig:fig_3}
+Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig6.eps){#fig:fig_3 height="8.5cm" width="8.5cm"}
+
 
 ## Oblique staircase simulation
+
 Bli Bla Blub
 
+
 ![**Figure caption for part (A) and part (B) .** 
-Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig7.eps){#fig:fig_4}
+Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig7.eps){#fig:fig_4 height="11.6cm" width="8.5cm"}
+
 
 ## Tuning curve of excitatory burst neuron (EBN)
+
 Bli Bla Blub
 
+
 ![**Figure caption for part (A) and part (B) .** 
-Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig8.eps){#fig:fig_5}
+Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig8.eps){#fig:fig_5
+height="8.5cm" width="8.5cm"}
+
 
 ## Effects of frequency of external stimulation
+
 Bli Bla Blub
 
+
 ![**Figure caption for part (A) and part (B) .** 
-Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig9.eps){#fig:fig_6}
+Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig9.eps){#fig:fig_6 height="5.0cm" width="11.6cm"}
+
 
 ## Trading saccade velocity and duration
+
 Bli Bla Blub
 
+
 ![**Figure caption for part (A) and part (B) .** 
-Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig10.eps){#fig:fig_7}
+Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig10.eps){#fig:fig_7
+height="11.6cm" width="8.5cm"}
+
 
 ## Smooth staircase simulation
+
 Bli Bla Blub
 
+
 ![**Figure caption for part (A) and part (B) .** 
-Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig11.eps){#fig:fig_8}
+Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig11.eps){#fig:fig_8
+height="11.6cm" width="8.5cm"}
+
 
 ## Interrupted saccade simulation
+
 Bli Bla Blub
 
+
 ![**Figure caption for part (A) and part (B) .** 
-Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig12.eps){#fig:fig_9}
+Description of stuff happening  in the original implementation of Gancarz & Grossberg [@Gancarz1998].](../code/fig12.eps){#fig:fig_9 height="11.6cm" width="8.5cm"}
+
 
 # Conclusion
 

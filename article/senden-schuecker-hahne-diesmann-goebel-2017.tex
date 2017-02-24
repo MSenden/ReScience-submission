@@ -241,54 +241,80 @@ formation}, G. Gancarz, S. Grossberg, Neural Networks, 1159-1174, 1998
 
 \section{Introduction}\label{introduction}
 
-We provide an implementation of the saccade generator (GM) model of the
-neural circuitry in the reticular formation underlying saccadic eye
-movements proposed by Gancarz \& Grossberg \autocite{Gancarz1998}. The
-model forms part of (e.g.~is it an important paper in the domain ?). The
-original implementation is not publicly available. T he implementation
-we propose is coded in the NEST \autocite{Gewaltig2007} framework, one
-of the modern actively developed simulation platforms that is publicly
-available. The code uses the Python interface \autocite{Eppler2008} for
-legibility. The model and analysis scripts are implemented using Python
+We provide an implementation of the saccade generator (SG); a rate
+neuron model of the neural circuitry in the reticular formation proposed
+by Gancarz \& Grossberg \autocite{Gancarz1998}. The same group has
+recently sucessfully embedded the SG into a larger model of the eye
+movement network \autocite{Grossberg2012} showcasing its compatible
+nature. This compatibility of the SG model might prove useful in the
+future for studying the interplay of neural (sub)systems of visuo-motor
+integration. It is thus of interest to implement the model in publicly
+available, widely used, and actively developed neural simulation
+frameworks such as NEST \autocite{Gewaltig2007}. We show that the model
+translates well to the NEST framework as our implementation faithfully
+reproduces most simulation results reported in the original publication.
+Our code uses the Python interface \autocite{Eppler2008} for legibility
+with both model and analysis scripts being implemented using Python
 2.7.12.
 
 \section{Methods}\label{methods}
 
-The methods section should explain how you replicated the original
-results:
+We largely follow the descriptions of the model provided in the original
+publication with a number well-motivated exceptions. First, in the
+original description, neuron activations are bounded from below at zero
+resulting in their rectification at every step in the numerical
+integration. Since this effectively alters neuron dynamics from their
+original description, we refrained from this practice. Instead, input
+received by each neuron from other neurons was passed through a
+rectified linear gain function before summation. This assured that
+neuron dynamics accorded with their description. Second, the gain
+function \[ g(x) = {\frac{x^4}{0.1^4+x^4}} \] \{\#eq:1\} (equation A11)
+in the original publication was replaced by
+\[ g(x) = {\frac{1}{e^{-40(x-0.1)}}} \] \{\#eq:2\} to prevent positive
+responses to negative net input but otherwise preserve the shape of the
+curve for \(\mathrm{x>0}\). Third, according to equation A12 in the
+original publication horizontal eye position \(\theta\) is given by
+\(\mathrm{\theta=260({TN}_{r}-0.5)}\). However, activation of tonic
+neurons (TNs) is 0 rather than 0.5 when the eye is at the center of its
+range and a factor of 260 produces saccades of excessively high
+amplitudes. We found a factor of 150 to reproduce original simulations
+better. Finally, the original implementation uses the fourth order
+Runge--Kutta method for numerical integration. Instead, we used the
+Exponential Euler method which is standardly implemented in NEST for the
+numerical integration of rate neurons \autocite{Hahne2016}.
 
-\begin{itemize}
-\tightlist
-\item
-  did you use paper description
-\item
-  did you contact authors ?
-\item
-  did you use original sources ?
-\item
-  did you modify some parts ?
-\item
-  etc.
-\end{itemize}
-
-If relevevant in your domain, you should also provide a new standardized
-description of the work.
+In addition to these changes, the original model description has two
+features which cannot be straightforwardly translated to NEST. First,
+whether a nonlinear gain function is applied to a neuron's input can
+depend on the origin of said input. This is notably the case for
+excitatory burst neurons (EBNs) and omnipause neurons (OPNs). Since NEST
+only applies a single gain function per neuron to each of its input, we
+opted for using a linear gain function for EBNs and OPNs and to pass
+those inputs requiring an additional nonlinear gain function through an
+auxiliary unit instantaneously applying the desired nonlinearity.
+Second, constant input to a neuron was provided by an appropriately
+weighted bias node.
 
 \section{Results}\label{results}
 
-Results should be compared with original results and you have to explain
-why you think they are the same or why they may differ (qualitative
-result vs quantitative result). Note that it is not necessary to redo
-all the original analysis of the results.
+In the remainder we present the results of our simulations for all nine
+experiments reported in the original publication. While our results
+generally accord very well with those of Gancarz \& Grossberg
+\autocite{Gancarz1998}, some simulations required slightly divergent
+parameter values to reproduce original results.
 
-\subsection{Saccadic staircase
+\subsection{1) Saccadic staircase
 simulation}\label{saccadic-staircase-simulation}
 
-Bli Bla Blub
+The first simulation reported by Gancarz \& Grossberg
+\autocite{Gancarz1998} showcases the evolution of activity for each
+neuron type in the horizontal SG to a constant input (\(\mathrm{I=1}\))
+applied to the left long-lead burst neuron (LLBN) for
+\(265\,\mathrm{ms}\).
 
 \begin{figure}
 \centering
-\includegraphics[width=11.60000cm,height=8.50000cm]{../code/fig3.eps}
+\includegraphics{../code/fig3.eps}
 \caption{\textbf{Figure caption for part (A) and part (B) .} Description
 of stuff happening in the original implementation of Gancarz \&
 Grossberg \autocite{Gancarz1998}.}\label{fig:fig_1}
@@ -297,11 +323,11 @@ Grossberg \autocite{Gancarz1998}.}\label{fig:fig_1}
 \subsection{Cell activity profiles in the reticular
 formation}\label{cell-activity-profiles-in-the-reticular-formation}
 
-Bli Bla Blub
+blubber
 
 \begin{figure}
 \centering
-\includegraphics[width=8.50000cm,height=11.60000cm]{../code/fig5.eps}
+\includegraphics[width=6.37500cm,height=8.50000cm]{../code/fig5.eps}
 \caption{\textbf{Figure caption for part (A) and part (B) .} Description
 of stuff happening in the original implementation of Gancarz \&
 Grossberg \autocite{Gancarz1998}.}\label{fig:fig_2}
@@ -313,7 +339,7 @@ Bli Bla Blub
 
 \begin{figure}
 \centering
-\includegraphics{../code/fig6.eps}
+\includegraphics[width=8.50000cm,height=8.50000cm]{../code/fig6.eps}
 \caption{\textbf{Figure caption for part (A) and part (B) .} Description
 of stuff happening in the original implementation of Gancarz \&
 Grossberg \autocite{Gancarz1998}.}\label{fig:fig_3}
@@ -326,7 +352,7 @@ Bli Bla Blub
 
 \begin{figure}
 \centering
-\includegraphics{../code/fig7.eps}
+\includegraphics[width=8.50000cm,height=11.60000cm]{../code/fig7.eps}
 \caption{\textbf{Figure caption for part (A) and part (B) .} Description
 of stuff happening in the original implementation of Gancarz \&
 Grossberg \autocite{Gancarz1998}.}\label{fig:fig_4}
@@ -339,7 +365,7 @@ Bli Bla Blub
 
 \begin{figure}
 \centering
-\includegraphics{../code/fig8.eps}
+\includegraphics[width=8.50000cm,height=8.50000cm]{../code/fig8.eps}
 \caption{\textbf{Figure caption for part (A) and part (B) .} Description
 of stuff happening in the original implementation of Gancarz \&
 Grossberg \autocite{Gancarz1998}.}\label{fig:fig_5}
@@ -352,7 +378,7 @@ Bli Bla Blub
 
 \begin{figure}
 \centering
-\includegraphics{../code/fig9.eps}
+\includegraphics[width=11.60000cm,height=5.00000cm]{../code/fig9.eps}
 \caption{\textbf{Figure caption for part (A) and part (B) .} Description
 of stuff happening in the original implementation of Gancarz \&
 Grossberg \autocite{Gancarz1998}.}\label{fig:fig_6}
@@ -365,7 +391,7 @@ Bli Bla Blub
 
 \begin{figure}
 \centering
-\includegraphics{../code/fig10.eps}
+\includegraphics[width=8.50000cm,height=11.60000cm]{../code/fig10.eps}
 \caption{\textbf{Figure caption for part (A) and part (B) .} Description
 of stuff happening in the original implementation of Gancarz \&
 Grossberg \autocite{Gancarz1998}.}\label{fig:fig_7}
@@ -378,7 +404,7 @@ Bli Bla Blub
 
 \begin{figure}
 \centering
-\includegraphics{../code/fig11.eps}
+\includegraphics[width=8.50000cm,height=11.60000cm]{../code/fig11.eps}
 \caption{\textbf{Figure caption for part (A) and part (B) .} Description
 of stuff happening in the original implementation of Gancarz \&
 Grossberg \autocite{Gancarz1998}.}\label{fig:fig_8}
@@ -391,7 +417,7 @@ Bli Bla Blub
 
 \begin{figure}
 \centering
-\includegraphics{../code/fig12.eps}
+\includegraphics[width=8.50000cm,height=11.60000cm]{../code/fig12.eps}
 \caption{\textbf{Figure caption for part (A) and part (B) .} Description
 of stuff happening in the original implementation of Gancarz \&
 Grossberg \autocite{Gancarz1998}.}\label{fig:fig_9}
