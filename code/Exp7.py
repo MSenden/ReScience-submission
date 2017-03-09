@@ -10,18 +10,14 @@
 # -----------------------------------------------------------------------------
 # File description:
 # 
-# Simulates reimplemented Gancarz & Grossberg (1998) model.
-# Generates Fig. 10: Trading velocity and duration while keeping amplitude constant. 
-# Only the shape of the input signal to the modelwas varied
-# The weight W was set equal to 2. For the high velocity trial (dotted line), stimulation frequency F was 3,
+# Simulates reimplemented saccade generation (SG) model of Gancarz & Grossberg (1998).
+# Generates Fig. 7: Trading saccade velocity for duration (figure 10 in original publication).
+# Only the shape of the input signal to the model was varied
+# The weight W was set equal to 2. For the high velocity trial (dashed line), stimulation frequency F was 3,
 # and stimulation duration was 62 ms. 
 # For the low velocity trial (solid line), F was 1.3, and stimulation duration was 112 ms.
 #
-# Note that neuron activations are no longer bounded from below at zero. Instead input to each neuron was passed through a rectified  
-# linear signal function. Furthermore, signal function g (equation A11 in Gancarz & Grossberg; 1998) was replaced by a sigmoid 
-# function. Finally, simulation time was reduced compared to what was reported in the original paper: 82 ms for high velocity
-# simulations and 117 ms for low velocity simulations. In contrast to the originally reported simulations, 
-# in our simulations both combinations of stimulation frequency and duration lead to two consecutive saccades rather than one.
+# Note that neuron activations are no longer bounded from below at zero. Instead input to each neuron was passed through a rectified linear signal function. Furthermore, signal function g (equation A11 in Gancarz & Grossberg; 1998) was replaced by a sigmoid-shaped function. In contrast to the originally reported simulations, both combinations of stimulation frequency and duration produced two rather than one saccade in our simulations.
 # -----------------------------------------------------------------------------
 
 import pylab as pl
@@ -40,11 +36,14 @@ execfile('setup_model.py')
 #### 			auxiliary				 ##
 ###########################################
 
+# additional variables
+cm2inch		= .394	# inch/cm
+
 # figure setup
 rcParams.update({'figure.autolayout': True})
 
-fig_name	= 'fig10.eps'
-fig_size 	= np.multiply([8.5,11.6],.394)
+fig_name	= 'fig7.eps'
+fig_size 	= np.multiply([11.6,17.6],cm2inch)
 fig_rows 	= 5
 fig_cols 	= 1
 fig_plots	= fig_rows*fig_cols
@@ -57,8 +56,10 @@ fig 		= pl.figure(facecolor = face, edgecolor = edge, figsize = fig_size)
 for i in range(0,fig_plots):
 	ax[i] 	= fig.add_subplot(fig_rows,fig_cols,i+1)
 	ax[i].get_xaxis().set_visible(False)
+	ax[i].get_yaxis().set_ticks([])
 	ax[i].set_ylim([-1.,1.5])
-	ax[i].locator_params(axis='y',nbins=3)
+	ax[i].tick_params(right='off')
+	ax[i].tick_params(top='off')
 
 lines = ['k--','k-']
 linecycler = cycle(lines)
@@ -102,7 +103,7 @@ for s in range(0,2):
 
 # let system reach equilibrium
 # in the absence of input and stimulation
-	nest.Simulate(150)
+	nest.Simulate(50)
 
 
 ###########################################
@@ -166,8 +167,9 @@ for s in range(0,2):
 	ax[4].get_xaxis().set_visible(True)
 	ax[4].set_xlabel('time (ms)')
 	ax[4].set_ylabel('TN')
+	ax[4].set_ylim([-.2,.2])
 
-pl.savefig(fig_name, format='eps', dpi=ppi)
+pl.savefig(fig_name, format='eps', dpi=ppi,bbox_inches='tight')
 pl.show()
 
 

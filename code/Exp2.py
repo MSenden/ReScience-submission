@@ -5,19 +5,16 @@
 # -----------------------------------------------------------------------------
 # References:
 #
-# Gancarz, G., Grossberg, S. "A Neural Model of the Saccade Generator in the Reticular Formation."
-# Neural Networks 11, no. 7-8 (October 1998): 1159-74. doi:10.1016/S0893-6080(98)00096-3.
+# Gancarz, G., Grossberg, S. "A Neural Model of the Saccade Generator in the Reticular Formation." Neural Networks 11, no. 7-8 (October 1998): 1159-74. doi:10.1016/S0893-6080(98)00096-3.
 # -----------------------------------------------------------------------------
 # File description:
 # 
-# Simulates reimplemented Gancarz & Grossberg (1998) model.
-# Generates Fig. 5: Cell activity profiles in the reticular formation. 
+# Simulates reimplemented saccade generation (SG) model of Gancarz & Grossberg (1998).
+# Generates Fig. 2: Activity profiles in LLBN and EBN (figure 5 in original publication).  
 # LLBN and EBN discharge rates for 5, 10, and 20 degree saccades. 
 # Input to left SG was set equal to 1, 1.75, and 2.5; in each case for 85 ms
 #
-# Note that neuron activations are no longer bounded from below at zero. Instead input to each neuron was passed through a rectified  
-# linear signal function. Furthermore, signal function g (equation A11 in Gancarz & Grossberg; 1998) was replaced by a sigmoid 
-# function.
+# Note that neuron activations are no longer bounded from below at zero. Instead input to each neuron was passed through a rectified linear signal function. Furthermore, signal function g (equation A11 in Gancarz & Grossberg; 1998) was replaced by a sigmoid-shaped function. 
 # -----------------------------------------------------------------------------
 
 import pylab as pl
@@ -35,13 +32,16 @@ execfile('setup_model.py')
 #### 			auxiliary				 ##
 ###########################################
 
+# additional variables
+cm2inch		= .394 # inch/cm
+
 # figure setup
 rcParams.update({'figure.autolayout': True})
 
-fig_name	= 'fig5.eps'
-fig_size 	= np.multiply([8.5,11.6],.394)
-fig_rows 	= 2
-fig_cols 	= 1
+fig_name	= 'fig2.eps'
+fig_size 	= np.multiply([17.6,8.5],cm2inch)
+fig_rows 	= 1
+fig_cols 	= 2
 fig_plots	= fig_rows*fig_cols
 ppi			= 1200
 face	 	= 'white'
@@ -52,9 +52,13 @@ fig 		= pl.figure(facecolor = face, edgecolor = edge, figsize = fig_size)
 for i in range(0,fig_plots):
 	col 	= np.mod(i,2)	
 	ax[i] 	= fig.add_subplot(fig_rows,fig_cols,i+1)
+	ax[i].axhline(color='k',linestyle='--')
+	ax[i].set_xlabel('time (ms)')	
 	ax[i].set_ylim([-1.,1.5])
 	ax[i].locator_params(axis='y',nbins=3)
 
+ax[0].text(-0.075, 1.1, 'A', transform=ax[0].transAxes, size=16, weight='bold')
+ax[1].text(-0.075, 1.1, 'B', transform=ax[1].transAxes, size=16, weight='bold')
 
 ###########################################
 #### 		set up experiment			 ##
@@ -80,7 +84,7 @@ T       	= np.linspace(t_start,t_end,t_steps)
 #### 	set up recording devices 		 ##
 ###########################################
 
-MM 		= [None]*3
+MM			= [None]*3
 for s in range(0,3):
 	MM[s] = nest.Create('multimeter')
 	nest.SetStatus(MM[s], {'interval': dt, 'record_from': ['rate']})
@@ -92,7 +96,7 @@ for s in range(0,3):
 
 # let system reach equilibrium
 # in the absence of input and stimulation
-	nest.Simulate(150)
+	nest.Simulate(50)
 
 
 ###########################################
@@ -129,16 +133,11 @@ for s in range(0,3):
 	senders  = data[0]['events']['senders']
 	voltages = data[0]['events']['rate']
 
-#
+# plot
 	ax[0].plot(T,voltages[np.where(senders == LLBN[0])],linewidth=2)
-	ax[0].get_xaxis().set_visible(False)
-	ax[0].set_title('LLBN')
-
 	ax[1].plot(T,voltages[np.where(senders == EBN[0])],linewidth=2)
-	ax[1].set_title('EBN')
-	ax[1].set_xlabel('time (ms)')	
 
-pl.savefig(fig_name, format='eps', dpi=ppi)
+pl.savefig(fig_name, format='eps', dpi=ppi, bbox_inches='tight')
 pl.show()
 
 

@@ -5,16 +5,13 @@
 # -----------------------------------------------------------------------------
 # References:
 #
-# Gancarz, G., Grossberg, S. "A Neural Model of the Saccade Generator in the Reticular Formation."
-# Neural Networks 11, no. 7-8 (October 1998): 1159-74. doi:10.1016/S0893-6080(98)00096-3.
+# Gancarz, G., Grossberg, S. "A Neural Model of the Saccade Generator in the Reticular Formation." Neural Networks 11, no. 7-8 (October 1998): 1159-74. doi:10.1016/S0893-6080(98)00096-3.
 # -----------------------------------------------------------------------------
 # File description:
 # 
-# Setup the Gancarz & Grossberg (1998) model in PyNEST for subsequent simulation
+# Setup the SG model developed by Gancarz & Grossberg (1998) in PyNEST for subsequent simulation.
 
-# Note that neuron activations are no longer bounded from below at zero. Instead input to each neuron was passed through a rectified  
-# linear signal function. Furthermore, signal function g (equation A11 in Gancarz & Grossberg; 1998) was replaced by a sigmoid 
-# function.
+# Note that neuron activations are no longer bounded from below at zero. Instead input to each neuron was passed through a rectified linear signal function. Furthermore, signal function g (equation A11 in Gancarz & Grossberg; 1998) was replaced by a sigmoid-shaped function.
 # -----------------------------------------------------------------------------
 
 import nest
@@ -27,7 +24,7 @@ import numpy as np
 
 # simulation parameters 
 dt     		= 1e-3	# time step for numerical integration (in ms)
-delay  		= 1e-3	# conductance delay (in ms)
+delay  		= 1e-3	# conductance delay (in ms) - setting this equal to time step implies no delay
 tau    		= 50.	# time constant (in ms) 
 sigma  		= 0.0	# scaling factor of additive noise
 
@@ -50,11 +47,18 @@ nest.SetKernelStatus({'resolution': dt, 'use_wfr': False})
 # bias				: inflection point of sigmoid function
 # linear summation	: if false, gain function is applied to input before summation; if true, it is applied afterwards
 
-Params_llbn = {'tau': tau,'std': sigma,'lambda':1.3,'linear_summation': False}
-Params_ebn  = {'tau': tau,'std': sigma,'lambda':3.5,'offset_ex':2.,'offset_in':1.,'linear_summation': False}
-Params_ibn  = {'tau': tau,'std': sigma,'lambda':2.4,'linear_summation': False}
-Params_opn  = {'tau': tau,'std': sigma,'lambda':0.2,'offset_ex':1.,'offset_in':0.4,'g_in':3.5,'linear_summation': False}
-Params_tn   = {'tau': tau,'std': sigma,'lambda':0.}
+Params_llbn = {'tau': tau,'std': sigma,
+			   'lambda':1.3,'linear_summation': False}
+Params_ebn  = {'tau': tau,'std': sigma,
+			   'lambda':3.5,'offset_ex':2.,'offset_in':1.,
+			   'linear_summation': False}
+Params_ibn  = {'tau': tau,'std': sigma,
+			   'lambda':2.4,'linear_summation': False}
+Params_opn  = {'tau': tau,'std': sigma,
+			   'lambda':0.2,'offset_ex':1.,'offset_in':0.4,
+			   'g_in':3.5, 'linear_summation': False}
+Params_tn   = {'tau': tau,'std': sigma,
+			   'lambda':0.,'linear_summation': False}
 Params_sc   = {'tau': tau,'std': sigma}
 Params_sigm = {'beta': 40., 'bias': .1}
 
@@ -75,7 +79,7 @@ for i in range(0, 4):
 				params = Params_ebn)
     IBN[i]  = nest.Create('rectifiedlin_rate_ipn',				# rectified linear gain function 
 				params = Params_ibn)
-    TN[i]   = nest.Create('lin_rate_ipn',						# linear gain function 
+    TN[i]   = nest.Create('rectifiedlin_rate_ipn',				# rectified linear gain function 
 				params = Params_tn)
 
 
@@ -83,6 +87,11 @@ for i in range(0, 4):
 Bias 		= nest.Create(
     		 'lin_rate_ipn', 									# linear gain function 
 				params={'tau': dt, 'mean': 1., 'std': sigma})	# constant input to EBN
+
+# unit representing external stimulation to OPN
+EXT 		= nest.Create(
+    		 'lin_rate_ipn', 									# linear gain function 
+				params={'tau': dt, 'mean': 0., 'std': sigma})
 
 # output functions (EBNs and OPN)
 gS  		= nest.Create('piecewiselin_out_function')			# piecewise linear gain function 
@@ -132,6 +141,8 @@ for i in range(0,4):
 # to OPN (cont'd)
 nest.Connect(Bias, OPN, 'all_to_all', {
                 'model': 'rate_connection', 'weight': 1.2})
+nest.Connect(EXT, OPN, 'all_to_all', {
+                'model': 'rate_connection', 'weight': 1.})
 
 # to output functions (cont'd)
 nest.Connect(OPN, gP, 'all_to_all', {

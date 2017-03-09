@@ -5,20 +5,16 @@
 # -----------------------------------------------------------------------------
 # References:
 #
-# Gancarz, G., Grossberg, S. "A Neural Model of the Saccade Generator in the Reticular Formation."
-# Neural Networks 11, no. 7-8 (October 1998): 1159-74. doi:10.1016/S0893-6080(98)00096-3.
+# Gancarz, G., Grossberg, S. "A Neural Model of the Saccade Generator in the Reticular Formation." Neural Networks 11, no. 7-8 (October 1998): 1159-74. doi:10.1016/S0893-6080(98)00096-3.
 # -----------------------------------------------------------------------------
 # File description:
 # 
-# Simulates reimplemented Gancarz & Grossberg (1998) model.
-# Generates Fig. 6: Visually guided saccades. 
+# Simulates reimplemented saccade generation (SG) model of Gancarz & Grossberg (1998).
+# Generates Fig. 3: Oblique saccades (figure 6 in original publication). 
 # Input to the horizontal (right) and vertical (up) circuits were: (0.67, 0.08), (0.7, 0.22), (0.74,0.4), (0.75, 0.6), (0.7, 0.9).
 # These inputs were left on for 75 ms.
 #
-# Note that neuron activations are no longer bounded from below at zero. Instead input to each neuron was passed through a rectified  
-# linear signal function. Furthermore, signal function g (equation A11 in Gancarz & Grossberg; 1998) was replaced by a sigmoid 
-# function. Finally, eye position in the horizontal (vertical) direction is given by 150*TN_right (196*TN_up) rather than by 
-# 260*(TN_right-0.5) [260*(TN_up-0.5)] as described in equation A12 in Gancarz & Grossberg (1998)
+# Note that neuron activations are no longer bounded from below at zero. Instead input to each neuron was passed through a rectified linear signal function. Furthermore, signal function g (equation A11 in Gancarz & Grossberg; 1998) was replaced by a sigmoid-shaped function.
 # -----------------------------------------------------------------------------
 
 import pylab as pl
@@ -37,13 +33,14 @@ execfile('setup_model.py')
 ###########################################
 
 # additional variables
-g_pos		= 150.			# gain eye position
+cm2inch		= .394 # inch/cm
+g_pos		= 260. # gain eye position
 
 # figure setup
 rcParams.update({'figure.autolayout': True})
 
-fig_name	= 'fig6.eps'
-fig_size 	= np.multiply([8.5,8.5],.394)
+fig_name	= 'fig3.eps'
+fig_size 	= np.multiply([11.6,11.6],cm2inch)
 ppi			= 1200
 face	 	= 'white'
 edge	 	= 'white'
@@ -65,9 +62,9 @@ ax.set_ylabel('vertical eye position (deg)')
 ###########################################
 
 # input & external electric stimulation
-I_horizontal  		= [.67,.70,.74,.75,.70]
-I_vertical  		= [.08,.22,.40,.60,.90] 
-J   				= 0.
+I_h			= [.67,.70,.74,.75,.70]
+I_v  		= [.08,.22,.40,.60,.90] 
+J			= 0.
 
 # timing protocol (in ms)
 preStim  	=  0
@@ -85,7 +82,7 @@ T       	= np.linspace(t_start,t_end,t_steps)
 #### 	set up recording devices 		 ##
 ###########################################
 
-MM 		= [None]*5
+MM 			= [None]*5
 for s in range(0,5):
 	MM[s] = nest.Create('multimeter')
 	nest.SetStatus(MM[s], {'interval': dt, 'record_from': ['rate']})
@@ -97,7 +94,7 @@ for s in range(0,5):
 
 # let system reach equilibrium
 # in the absence of input and stimulation
-	nest.Simulate(150)
+	nest.Simulate(50)
 
 ###########################################
 #### 	connect recording devices  		 ##
@@ -117,8 +114,8 @@ for s in range(0,5):
 	nest.Simulate(preStim)
 
 # stimulus period
-	nest.SetStatus(LLBN[1],{'mean': I_horizontal[s]})
-	nest.SetStatus(LLBN[3],{'mean': I_vertical[s]})
+	nest.SetStatus(LLBN[1],{'mean': I_h[s]})
+	nest.SetStatus(LLBN[3],{'mean': I_v[s]})
 	nest.SetStatus(OPN,{'mean': J})
 	nest.Simulate(Stim)
 
@@ -141,9 +138,10 @@ for s in range(0,5):
 	theta_h = g_pos*voltages[np.where(senders == TN[1])]
 	theta_v = g_pos*voltages[np.where(senders == TN[3])]
 	
+# plot
 	ax.plot(theta_h,theta_v,linewidth=2)
 
-pl.savefig(fig_name, format='eps', dpi=ppi)
+pl.savefig(fig_name, format='eps', dpi=ppi,  bbox_inches='tight')
 pl.show()
 
 
